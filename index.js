@@ -23,6 +23,31 @@ let notes = [
   },
 ];
 
+
+  let persons=[
+    { 
+      "name": "Arto Hellas", 
+      "number": "040-123456",
+      "id": 1
+    },
+    { 
+      "name": "Ada Lovelace", 
+      "number": "39-44-5323523",
+      "id": 2
+    },
+    { 
+      "name": "Dan Abramov", 
+      "number": "12-43-234345",
+      "id": 3
+    },
+    { 
+      "name": "Mary Poppendieck", 
+      "number": "39-23-6423122",
+      "id": 4
+    }
+  ]
+
+
 app.get("/", (req, res) => {
   res.send("<h1>Hello World!!</h1>");
 });
@@ -49,13 +74,14 @@ app.delete("/api/notes/:id", (req, res)=>{
 })
 
 
-app.post('/api/notes', (req, res) => {
-const generateId = ()=>{
-  const maxId = notes.length>0 
-  ? Math.max(...notes.map(n=>n.id)) 
+const generateId = (arr)=>{
+  const maxId = arr.length>0 
+  ? Math.max(...arr.map(n=>n.id)) 
   : 0;
   return maxId + 1
 }
+
+app.post('/api/notes', (req, res) => {
   const {body} = req;
 if(!body.content){
   return res.status(400).json({error: "Content is missing"})
@@ -64,13 +90,47 @@ if(!body.content){
   const note = {
     content: body.content,
     important: body.important || false,
-    id: generateId()
+    id: generateId(notes)
   }
 
   console.log(note);
 
   notes = notes.concat(note)
   res.json(note);
+})
+
+app.get("/api/persons", (req, res)=>{
+  res.json(persons)
+})
+
+app.post("/api/persons", (req,res)=>{
+  const newPerson = {
+    name: req.body.name,
+    number: req.body.number,
+    id: generateId(persons)
+  }
+
+  console.log(req.body)
+  res.json(newPerson)
+})
+
+app.delete("/api/persons/:id", (req,res)=>{
+  persons = persons.filter(p=>p.id!==Number(req.params.id))
+  res.json(persons)
+})
+
+app.put("/api/persons/:id", (req,res)=>{
+  persons = persons.map(p=>{
+    p.id===Number(req.params.id) ?
+      {
+        ...p,
+        name: req.body.name,
+        number: req.body.number
+      }
+      : p
+    }) 
+  res.json(persons)
+  
 })
 
 const PORT = process.env.PORT || 3001;
